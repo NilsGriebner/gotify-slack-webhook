@@ -1,11 +1,9 @@
 name: Release
 
-# This GitHub action creates a release when a tag that matches the pattern
-# "v*" (e.g. v0.1.0) is created.
+# This GitHub action creates a release when a tag is created.
 on:
   push:
     tags:
-      - 'v*'
 
 permissions:
   # Write is needed to create a new release on the repo
