@@ -23,7 +23,7 @@ func SendMessage(msg *plugin.Message, app_token string) error {
 		return err
 	}
 	if res.StatusCode != http.StatusOK {
-		return errors.New("Gotify API indicated message sending failed. Is the token correct?")
+		return errors.New("gotify API indicated message sending failed. Is the token correct?")
 	} else {
 		return nil
 	}
