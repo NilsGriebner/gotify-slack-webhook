@@ -4,6 +4,7 @@ name: Release
 on:
   push:
     tags:
+      - '*'
 
 permissions:
   # Write is needed to create a new release on the repo
