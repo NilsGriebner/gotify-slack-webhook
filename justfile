@@ -11,34 +11,33 @@ make:
 lint:
   golangci-lint run --fix
 
-server-mod := "gotify-server.mod"
-docker-image := "gotify-build-arm64"
-server-go-version := "1.22.4"
+[group('local')]
+run release:
+  docker run --rm -v "$PWD/_build:/app/data/plugins" -p 8080:80 gotify/server:{{release}}
+
+[group('local')]
+e2e release: (sync-versions "v" + release) (build "arm64") (run release)
+
 plugin-name := "gotify-slack-webhook"
-
-[group('gotify')]
-build-image:
-  # This is here because the official gotify/builder images are AMD64 only and I'm on a M1 Mac Book
-  docker build . -f build.Dockerfile -t {{docker-image}} --build-arg GO_VERSION={{server-go-version}}
-
-[group('gotify')]
-_build arch:
+[group('CI')]
+build arch:
+  #!/usr/bin/env bash
+  set -euxo pipefail
   mkdir -p _build
-  docker run --rm -v "$PWD/.:/build" -w /build {{docker-image}} go build -mod=readonly -a -installsuffix cgo -ldflags="-w -s" -buildmode=plugin -o _build/{{plugin-name}}-{{arch}}.so
+  # NOTE: Drop 2 characs because toolchain is "go1.2.3" and image is tagged with just version
+  version=$(go mod edit -json | jq -r '.Toolchain[2:]')
+  docker run --rm -v "$PWD/.:/mnt" -w /mnt gotify/build:${version}-linux-{{arch}} go build -mod=readonly -a -installsuffix cgo -ldflags="-w -s" -buildmode=plugin -o "_build/{{plugin-name}}-linux-{{arch}}.so"
 
-[group('gotify')]
-build: (_build "linux-arm64")
+server-mod := "gotify-server.mod"
+[group('CI')]
+sync-versions release:
+  # Downloads the target server versions dependency lockfile to sync it to the local one
+  wget -LO {{server-mod}} https://raw.githubusercontent.com/gotify/server/{{release}}/go.mod
+  echo "{{release}}" > SERVER_VERSION.txt
+  # Syncs the downloaded server lockfile with the local one to make plugin binary compatible
+  go run github.com/gotify/plugin-api/cmd/gomod-cap -from {{server-mod}} -to go.mod
+  # Sync Toolchain and Go language versions as well
+  go mod edit -go $(go mod edit -json gotify-server.mod | jq -r '.Go')
+  go mod edit -toolchain $(go mod edit -json gotify-server.mod | jq -r '.Toolchain')
+  go mod tidy
 
-[group('gotify')]
-run:
-  docker run --rm -v "$PWD/_build:/app/data/plugins" -p 8080:80 gotify/server-arm64
-
-[group('gotify')]
-download-gotify-server-mod:
-  wget -LO {{server-mod}} https://raw.githubusercontent.com/gotify/server/master/go.mod
-  echo "Also note that the Go version must match with Gotiy server (set via ASDF)"
-
-[group('gotify')]
-verify-versions: download-gotify-server-mod
-   go run github.com/gotify/plugin-api/cmd/gomod-cap -from {{server-mod}} -to go.mod
-   go mod tidy
