@@ -94,7 +94,9 @@ jobs:
       - name: Extract gotify/server image version
         id: image_version
         # NOTE: removing the leading "v" from the server version because image tags don't have it.
-        run: echo "ver=$(echo "${{ needs.build.outputs.server_version }}" | cut -c 2-)" >> "$GITHUB_OUTPUT"
+        run: echo "ver=$(echo "${NEEDS_BUILD_OUTPUTS_SERVER_VERSION}" | cut -c 2-)" >> "$GITHUB_OUTPUT"
+        env:
+          NEEDS_BUILD_OUTPUTS_SERVER_VERSION: ${{ needs.build.outputs.server_version }}
       - uses: docker/build-push-action@4f7cdeb0f05278b464e71357394bf2c61f94138e # v6.6.0
         id: push
         with:
