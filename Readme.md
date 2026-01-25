@@ -19,7 +19,7 @@ Many services already integrate with Slack using Incoming Webhooks. If they don'
 
 ### Installation
 
-**Either** build the plugin yourself or download a [binary release](https://github.com/LukasKnuth/gotify-slack-webhook/releases). Make the `.so` file available to Gotify in it's `pluginsdir` (default `/data/plugins`).
+**Either** [build](#build) the plugin yourself or download a [binary release](https://github.com/LukasKnuth/gotify-slack-webhook/releases). Make the `.so` file available to Gotify in it's `pluginsdir` (default `/data/plugins`).
 
 **Or**, use the pre-bundled Gotify Server Image built for each release: `ghcr.io/lukasknuth/gotify-slack-webhook-bundled` from [packages](https://github.com/LukasKnuth/gotify-slack-webhook/pkgs/container/gotify-slack-webhook-bundled).
 
@@ -99,6 +99,12 @@ We're sending REST API requests to the local running Gotify instance. For this t
 - You may not change the `server.listenaddr` or `GOTIFY_SERVER_LISTENADDR`, the server must listen on `localhost/127.0.0.1`
 
 NOTE: Neither of these apply to the **default configuration** of the server.
+
+## Build
+
+```shell
+$ make GOTIFY_VERSION="v2.8.0" FILE_SUFFIX="for-gotify-v2.8.0" build
+```
 
 ## References
 

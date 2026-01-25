@@ -1,6 +1,9 @@
+# IDE
+.idea
 # Build output
 *.so
 _build/
+build/
 gotify-slack-webhook
 
 # Verify against server mod list
